@@ -1,11 +1,12 @@
 // All API calls go through this file.
 // BASE URL is configurable via environment variable.
 const BASE_URL = 'https://dental-backend-3kfz.onrender.com/api';
-const API_KEY = localStorage.getItem("admin_key"); // for future use if needed
+// const API_KEY = localStorage.getItem("admin_key"); // for future use if needed
 
 // ─── Generic request helper ───────────────────────────────────────────────────
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
+  const API_KEY = localStorage.getItem("admin_key"); // for future use if needed
   const config = {
     headers: {
   'Content-Type': 'application/json',
