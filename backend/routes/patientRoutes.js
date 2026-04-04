@@ -20,49 +20,53 @@ function getTodayISO() {
 // NOTE: This MUST be defined BEFORE /:mobile so Express doesn't treat
 //       "slots" as a mobile param.
 router.get('/slots', (req, res) => {
-  try {
-    const { date } = req.query;
+  const { date } = req.query;
 
-    if (!date) {
-      return res.status(400).json({
-        success: false,
-        message: 'Query parameter "date" is required.',
-      });
-    }
-
-    if (!isValidDate(date)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Date must be in YYYY-MM-DD format.',
-      });
-    }
-
-    // Count bookings per slot for this date
-    const rows = db
-      .prepare(
-        'SELECT slot, COUNT(*) AS booked FROM patients WHERE date = ? GROUP BY slot'
-      )
-      .all(date);
-
-    const bookedMap = {};
-    rows.forEach((r) => { bookedMap[r.slot] = r.booked; });
-
-    const slots = FIXED_SLOTS.map((slot) => {
-      const booked = bookedMap[slot] || 0;
-      const available = MAX_PER_SLOT - booked;
-      return {
-        slot,
-        booked,
-        available,
-        isFull: booked >= MAX_PER_SLOT,
-      };
+  if (!date) {
+    return res.status(400).json({
+      success: false,
+      message: 'Query parameter "date" is required.',
     });
-
-    return res.json({ success: true, date, slots });
-  } catch (err) {
-    console.error('[GET /api/patients/slots] Error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
+
+  if (!isValidDate(date)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Date must be in YYYY-MM-DD format.',
+    });
+  }
+
+  db.all(
+    'SELECT slot, COUNT(*) AS booked FROM patients WHERE date = ? GROUP BY slot',
+    [date],
+    (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({
+          success: false,
+          message: 'Database error',
+        });
+      }
+
+      const bookedMap = {};
+      rows.forEach((r) => {
+        bookedMap[r.slot] = r.booked;
+      });
+
+      const slots = FIXED_SLOTS.map((slot) => {
+        const booked = bookedMap[slot] || 0;
+        const available = MAX_PER_SLOT - booked;
+        return {
+          slot,
+          booked,
+          available,
+          isFull: booked >= MAX_PER_SLOT,
+        };
+      });
+
+      return res.json({ success: true, date, slots });
+    }
+  );
 });
 
 // ─── GET /api/patients/today ──────────────────────────────────────────────────
