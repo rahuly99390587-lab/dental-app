@@ -55,13 +55,13 @@ app.get('/health', (_req, res) => {
 });
 
 // ─── Serve React Build (Production) ──────────────────────────────────────────
-if (process.env.NODE_ENV === 'production') {
-  const buildPath = path.join(__dirname, '..', 'frontend', 'build');
-  app.use(express.static(buildPath));
-  app.use((_req, res) => {
-    res.sendFile(path.join(buildPath, 'index.html'));
-  });
-}
+// if (process.env.NODE_ENV === 'production') {
+//   const buildPath = path.join(__dirname, '..', 'frontend', 'build');
+//   app.use(express.static(buildPath));
+//   app.use((_req, res) => {
+//     res.sendFile(path.join(buildPath, 'index.html'));
+//   });
+// }
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
