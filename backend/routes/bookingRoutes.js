@@ -126,4 +126,8 @@ router.delete('/:id', (req, res) => {
   });
 });
 
-module.exports = router;
+module.exports = {
+  router,
+  FIXED_SLOTS,
+  MAX_PER_SLOT
+};
