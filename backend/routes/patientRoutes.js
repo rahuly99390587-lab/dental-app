@@ -4,7 +4,7 @@ const db = require('../db');
 const auth = require('../middleware/auth');
 const { FIXED_SLOTS, MAX_PER_SLOT } = require('./bookingRoutes');
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────
 
 function isValidDate(dateStr) {
   if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
@@ -16,24 +16,16 @@ function getTodayISO() {
   return new Date().toISOString().split('T')[0];
 }
 
-// ─── GET /api/patients/slots?date=YYYY-MM-DD ──────────────────────────────────
-// NOTE: This MUST be defined BEFORE /:mobile so Express doesn't treat
-//       "slots" as a mobile param.
+// ─── SLOTS ───────────────────────────────────────────
 router.get('/slots', (req, res) => {
   const { date } = req.query;
 
   if (!date) {
-    return res.status(400).json({
-      success: false,
-      message: 'Query parameter "date" is required.',
-    });
+    return res.status(400).json({ success: false, message: 'Date required' });
   }
 
   if (!isValidDate(date)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Date must be in YYYY-MM-DD format.',
-    });
+    return res.status(400).json({ success: false, message: 'Invalid date format' });
   }
 
   db.all(
@@ -42,140 +34,140 @@ router.get('/slots', (req, res) => {
     (err, rows) => {
       if (err) {
         console.error(err);
-        return res.status(500).json({
-          success: false,
-          message: 'Database error',
-        });
+        return res.status(500).json({ success: false, message: 'DB error' });
       }
 
-      const bookedMap = {};
-      rows.forEach((r) => {
-        bookedMap[r.slot] = r.booked;
-      });
+      const map = {};
+      rows.forEach(r => map[r.slot] = r.booked);
 
-      const slots = FIXED_SLOTS.map((slot) => {
-        const booked = bookedMap[slot] || 0;
-        const available = MAX_PER_SLOT - booked;
-        return {
-          slot,
-          booked,
-          available,
-          isFull: booked >= MAX_PER_SLOT,
-        };
-      });
+      const slots = FIXED_SLOTS.map(slot => ({
+        slot,
+        booked: map[slot] || 0,
+        available: MAX_PER_SLOT - (map[slot] || 0),
+        isFull: (map[slot] || 0) >= MAX_PER_SLOT
+      }));
 
-      return res.json({ success: true, date, slots });
+      res.json({ success: true, date, slots });
     }
   );
 });
 
-// ─── GET /api/patients/today ──────────────────────────────────────────────────
+// ─── TODAY ───────────────────────────────────────────
 router.get('/today', auth, (req, res) => {
-  try {
-    const today = getTodayISO();
-    const patients = db
-      .prepare(
-        'SELECT * FROM patients WHERE date = ? ORDER BY token ASC'
-      )
-      .all(today);
+  const today = getTodayISO();
 
-    return res.json({ success: true, date: today, count: patients.length, data: patients });
-  } catch (err) {
-    console.error('[GET /api/patients/today] Error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error.' });
-  }
+  db.all(
+    'SELECT * FROM patients WHERE date = ? ORDER BY token ASC',
+    [today],
+    (err, rows) => {
+      if (err) return res.status(500).json({ success: false });
+
+      res.json({
+        success: true,
+        date: today,
+        count: rows.length,
+        data: rows
+      });
+    }
+  );
 });
 
-// ─── GET /api/patients/stats ──────────────────────────────────────────────────
+// ─── STATS ───────────────────────────────────────────
 router.get('/stats', auth, (req, res) => {
-  try {
-    const today = getTodayISO();
+  const today = getTodayISO();
 
-    const totalAll = db.prepare('SELECT COUNT(*) AS c FROM patients').get().c;
-    const totalToday = db.prepare('SELECT COUNT(*) AS c FROM patients WHERE date = ?').get(today).c;
-    const totalSlots = FIXED_SLOTS.length * MAX_PER_SLOT;
-    const slotsLeft = totalSlots - totalToday;
+  db.get('SELECT COUNT(*) AS c FROM patients', [], (err, totalAllRow) => {
+    if (err) return res.status(500).json({ success: false });
 
-    // Most popular slot today
-    const popularSlot = db
-      .prepare(
-        `SELECT slot, COUNT(*) AS cnt FROM patients
-         WHERE date = ? GROUP BY slot ORDER BY cnt DESC LIMIT 1`
-      )
-      .get(today);
+    db.get(
+      'SELECT COUNT(*) AS c FROM patients WHERE date = ?',
+      [today],
+      (err, totalTodayRow) => {
+        if (err) return res.status(500).json({ success: false });
 
-    // Recent bookings (last 5)
-    const recent = db
-      .prepare('SELECT * FROM patients ORDER BY id DESC LIMIT 5')
-      .all();
+        db.get(
+          `SELECT slot, COUNT(*) AS cnt FROM patients
+           WHERE date = ? GROUP BY slot ORDER BY cnt DESC LIMIT 1`,
+          [today],
+          (err, popularSlot) => {
+            if (err) return res.status(500).json({ success: false });
 
-    return res.json({
-      success: true,
-      data: {
-        totalAll,
-        totalToday,
-        totalSlots,
-        slotsLeft,
-        popularSlot: popularSlot || null,
-        recent,
-      },
-    });
-  } catch (err) {
-    console.error('[GET /api/patients/stats] Error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error.' });
-  }
-});
+            db.all(
+              'SELECT * FROM patients ORDER BY id DESC LIMIT 5',
+              [],
+              (err, recent) => {
+                if (err) return res.status(500).json({ success: false });
 
-// ─── GET /api/patients ────────────────────────────────────────────────────────
-router.get('/', auth, (req, res) => {
-  try {
-    const { date, search } = req.query;
-    let query = 'SELECT * FROM patients WHERE 1=1';
-    const params = [];
-
-    if (date) {
-      if (!isValidDate(date)) {
-        return res.status(400).json({ success: false, message: 'Invalid date format. Use YYYY-MM-DD.' });
+                res.json({
+                  success: true,
+                  data: {
+                    totalAll: totalAllRow.c,
+                    totalToday: totalTodayRow.c,
+                    totalSlots: FIXED_SLOTS.length * MAX_PER_SLOT,
+                    slotsLeft: (FIXED_SLOTS.length * MAX_PER_SLOT) - totalTodayRow.c,
+                    popularSlot: popularSlot || null,
+                    recent
+                  }
+                });
+              }
+            );
+          }
+        );
       }
-      query += ' AND date = ?';
-      params.push(date);
-    }
-
-    if (search) {
-      query += ' AND (name LIKE ? OR mobile LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`);
-    }
-
-    query += ' ORDER BY date ASC, token ASC';
-
-    const patients = db.prepare(query).all(...params);
-    return res.json({ success: true, count: patients.length, data: patients });
-  } catch (err) {
-    console.error('[GET /api/patients] Error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error.' });
-  }
+    );
+  });
 });
 
-// ─── DELETE /api/patients/:mobile ─────────────────────────────────────────────
-router.delete('/:mobile', auth, (req, res) => {
-  try {
-    const { mobile } = req.params;
+// ─── ALL PATIENTS ────────────────────────────────────
+router.get('/', auth, (req, res) => {
+  const { date, search } = req.query;
 
-    if (!/^\d{10}$/.test(mobile)) {
-      return res.status(400).json({ success: false, message: 'Mobile must be 10 digits.' });
-    }
+  let query = 'SELECT * FROM patients WHERE 1=1';
+  const params = [];
 
-    const info = db.prepare('DELETE FROM patients WHERE mobile = ?').run(mobile);
-
-    if (info.changes === 0) {
-      return res.status(404).json({ success: false, message: 'No patient found with that mobile number.' });
-    }
-
-    return res.json({ success: true, message: `Deleted ${info.changes} record(s) for mobile ${mobile}.` });
-  } catch (err) {
-    console.error('[DELETE /api/patients/:mobile] Error:', err);
-    return res.status(500).json({ success: false, message: 'Internal server error.' });
+  if (date) {
+    query += ' AND date = ?';
+    params.push(date);
   }
+
+  if (search) {
+    query += ' AND (name LIKE ? OR mobile LIKE ?)';
+    params.push(`%${search}%`, `%${search}%`);
+  }
+
+  query += ' ORDER BY date ASC, token ASC';
+
+  db.all(query, params, (err, rows) => {
+    if (err) return res.status(500).json({ success: false });
+
+    res.json({
+      success: true,
+      count: rows.length,
+      data: rows
+    });
+  });
+});
+
+// ─── DELETE ──────────────────────────────────────────
+router.delete('/:mobile', auth, (req, res) => {
+  const { mobile } = req.params;
+
+  db.run(
+    'DELETE FROM patients WHERE mobile = ?',
+    [mobile],
+    function (err) {
+      if (err) return res.status(500).json({ success: false });
+
+      if (this.changes === 0) {
+        return res.status(404).json({ success: false, message: 'Not found' });
+      }
+
+      res.json({
+        success: true,
+        message: `Deleted ${this.changes} record(s)`
+      });
+    }
+  );
 });
 
 module.exports = router;
