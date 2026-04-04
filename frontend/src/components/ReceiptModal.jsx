@@ -18,6 +18,7 @@ export default function ReceiptModal({ booking, onClose, onNewBooking }) {
   return (
     <div style={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div
+        id="booking-card"
         style={styles.modal}
         ref={dialogRef}
         tabIndex={-1}

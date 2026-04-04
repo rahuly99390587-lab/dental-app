@@ -4,7 +4,8 @@ import ReceiptModal from '../components/ReceiptModal';
 import { fetchSlots, createBooking } from '../utils/api';
 import { getTodayISO, formatDateLong, getGreeting } from '../utils/dateUtils';
 import { PROBLEM_CATEGORIES, CLINIC_INFO } from '../utils/constants';
-
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 const INITIAL_FORM = {
   name: '',
   mobile: '',
