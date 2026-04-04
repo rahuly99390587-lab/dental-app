@@ -14,7 +14,6 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (Postman, mobile apps, etc.)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
         return callback(null, true);
@@ -31,7 +30,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ─── Request Logger (dev) ─────────────────────────────────────────────────────
+// ─── Logger ───────────────────────────────────────────────────────────────────
 if (process.env.NODE_ENV !== 'production') {
   app.use((req, _res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
@@ -39,31 +38,21 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// ─── API Routes ───────────────────────────────────────────────────────────────
-// IMPORTANT: Mount order matters.
-//   - patientRoutes handles /api/patients/** (including /slots, /today, /stats)
-//   - bookingRoutes handles /api/booking
+// ─── ROUTES (FIXED) ───────────────────────────────────────────────────────────
 const patientRoutes = require('./routes/patientRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');
+
+// 🔥 FIX HERE
+const { router: bookingRoutes } = require('./routes/bookingRoutes');
 
 app.use('/api/patients', patientRoutes);
 app.use('/api/booking', bookingRoutes);
 
-// ─── Health Check ─────────────────────────────────────────────────────────────
+// ─── Health ───────────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ─── Serve React Build (Production) ──────────────────────────────────────────
-// if (process.env.NODE_ENV === 'production') {
-//   const buildPath = path.join(__dirname, '..', 'frontend', 'build');
-//   app.use(express.static(buildPath));
-//   app.use((_req, res) => {
-//     res.sendFile(path.join(buildPath, 'index.html'));
-//   });
-// }
-
-// ─── 404 Handler ─────────────────────────────────────────────────────────────
+// ─── 404 ──────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -71,8 +60,7 @@ app.use((req, res) => {
   });
 });
 
-// ─── Global Error Handler ─────────────────────────────────────────────────────
-// eslint-disable-next-line no-unused-vars
+// ─── Error ────────────────────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
   console.error('[Global Error]', err);
   res.status(500).json({
@@ -81,12 +69,9 @@ app.use((err, _req, res, _next) => {
   });
 });
 
-// ─── Start Server ─────────────────────────────────────────────────────────────
+// ─── Start ────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`\n🦷  Dental Booking API running on port ${PORT}`);
-  console.log(`   Environment : ${process.env.NODE_ENV || 'development'}`);
-  console.log(`   Health      : http://localhost:${PORT}/health`);
-  console.log(`   Slots API   : http://localhost:${PORT}/api/patients/slots?date=YYYY-MM-DD\n`);
+  console.log(`🦷 Dental Booking API running on port ${PORT}`);
 });
 
 module.exports = app;
