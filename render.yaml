@@ -1,0 +1,40 @@
+# render.yaml — Deploy both services on Render
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  # ── Backend API ─────────────────────────────────────────────────────────────
+  - type: web
+    name: dental-booking-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: DATA_DIR
+        value: /var/data
+      # Set ADMIN_KEY in the Render dashboard (keep secret)
+      # - key: ADMIN_KEY
+      #   sync: false
+    disk:
+      name: dental-db
+      mountPath: /var/data
+      sizeGB: 1
+
+  # ── Frontend (static site) ────────────────────────────────────────────────
+  - type: web
+    name: dental-booking-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://dental-booking-api.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
