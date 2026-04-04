@@ -44,10 +44,10 @@ if (process.env.NODE_ENV !== 'production') {
 //   - patientRoutes handles /api/patients/** (including /slots, /today, /stats)
 //   - bookingRoutes handles /api/booking
 const patientRoutes = require('./routes/patientRoutes');
-const { router: bookingRouter } = require('./routes/bookingRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 
 app.use('/api/patients', patientRoutes);
-app.use('/api/booking', bookingRouter);
+app.use('/api/booking', bookingRoutes);
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
