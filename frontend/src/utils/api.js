@@ -1,7 +1,7 @@
 // All API calls go through this file.
 // BASE URL is configurable via environment variable.
 const BASE_URL =
-  process.env.REACT_APP_API_URL || "https://dental-backend-3kfz.onrender.com";
+  process.env.REACT_APP_API_URL || "https://dental-backend-3kfz.onrender.com/api";
 
 // ─── Generic request helper ───────────────────────────────────────────────────
 async function request(path, options = {}) {
