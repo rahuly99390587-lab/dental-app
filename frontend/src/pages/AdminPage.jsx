@@ -83,10 +83,29 @@ export default function AdminPage() {
     <div style={styles.page}>
       {/* Header */}
       <div style={styles.header}>
-        <h1 style={styles.title}>🏥 Admin Panel</h1>
-        <p style={styles.subtitle}>Manage appointments and view clinic statistics</p>
-      </div>
+  <h1 style={styles.title}>🏥 Admin Panel</h1>
+  <p style={styles.subtitle}>Manage appointments and view clinic statistics</p>
 
+  {/* 🔐 Logout Button */}
+  <button
+    onClick={() => {
+      localStorage.removeItem("admin_key");
+      window.location.reload();
+    }}
+    style={{
+      marginTop: '10px',
+      padding: '8px 16px',
+      borderRadius: '8px',
+      border: 'none',
+      background: '#dc2626',
+      color: '#fff',
+      cursor: 'pointer',
+      fontWeight: '600'
+    }}
+  >
+    Logout
+  </button>
+</div>
       <div style={styles.container}>
         {/* Tab bar */}
         <div style={styles.tabs}>
