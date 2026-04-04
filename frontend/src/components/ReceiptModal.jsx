@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { formatDateLong } from '../utils/dateUtils';
 import { CLINIC_INFO } from '../utils/constants';
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 export default function ReceiptModal({ booking, onClose, onNewBooking }) {
   const dialogRef = useRef(null);
@@ -14,6 +16,28 @@ export default function ReceiptModal({ booking, onClose, onNewBooking }) {
   }, [onClose]);
 
   if (!booking) return null;
+  const downloadPDF = async () => {
+  const element = document.getElementById("booking-card");
+
+  if (!element) {
+    alert("PDF error");
+    return;
+  }
+
+  const html2canvas = (await import("html2canvas")).default;
+  const jsPDF = (await import("jspdf")).default;
+
+  const canvas = await html2canvas(element, { scale: 2 });
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const imgWidth = 210;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  pdf.addImage(imgData, "PNG", 0, 10, imgWidth, imgHeight);
+  pdf.save("booking-receipt.pdf");
+};
 
   return (
     <div style={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -73,6 +97,12 @@ export default function ReceiptModal({ booking, onClose, onNewBooking }) {
           <button style={styles.btnSecondary} onClick={onClose}>
             Close
           </button>
+          <button
+  style={styles.btnSecondary}
+  onClick={downloadPDF}
+>
+  📃 Download PDF
+</button>
         </div>
       </div>
     </div>
