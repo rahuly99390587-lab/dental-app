@@ -298,7 +298,7 @@ overlay.style.backdropFilter = "blur(6px)";
       )}
     </div>
   );
-}
+
 
 const styles = {
   page: {
