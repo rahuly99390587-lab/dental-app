@@ -23,6 +23,25 @@ export default function BookingPage() {
   const [submitError, setSubmitError]   = useState('');
   const [booking, setBooking]           = useState(null); // successful booking data
   const [fieldErrors, setFieldErrors]   = useState({});
+  const downloadPDF = async () => {
+  const element = document.getElementById("booking-card");
+
+  if (!element) return alert("Booking card not found");
+
+  const canvas = await html2canvas(element, {
+  scale: 2,
+  useCORS: true
+});
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const imgWidth = 190;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+  pdf.save("appointment.pdf");
+};
 
   // ── Load slots whenever the date changes ──────────────────────────────────
   const loadSlots = useCallback(async (date) => {

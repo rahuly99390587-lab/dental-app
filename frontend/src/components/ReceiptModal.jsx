@@ -3,6 +3,7 @@ import { formatDateLong } from '../utils/dateUtils';
 import { CLINIC_INFO } from '../utils/constants';
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
 
 export default function ReceiptModal({ booking, onClose, onNewBooking }) {
   const dialogRef = useRef(null);
@@ -160,11 +161,12 @@ const styles = {
   },
   subtitle: {
     margin: 0,
-    color: '#64748b',
+    color: '#000',
     fontSize: '0.9rem',
+    fontWeight: 600,
   },
   tokenBox: {
-    background: 'linear-gradient(135deg, #0f4c81, #1a6eb5)',
+  background: '#0f4c81',
     borderRadius: '14px',
     padding: '1.5rem',
     textAlign: 'center',
@@ -217,8 +219,8 @@ const styles = {
     fontSize: '0.82rem',
   },
   rowValue: {
-    color: '#1e293b',
-    fontWeight: 500,
+    color: '#000',
+    fontWeight: 600,
     flex: 1,
   },
   clinicBox: {
