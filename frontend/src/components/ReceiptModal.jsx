@@ -3,7 +3,7 @@ import { formatDateLong } from '../utils/dateUtils';
 import { CLINIC_INFO } from '../utils/constants';
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
+// import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
 
 export default function ReceiptModal({ booking, onClose, onNewBooking }) {
   const dialogRef = useRef(null);
