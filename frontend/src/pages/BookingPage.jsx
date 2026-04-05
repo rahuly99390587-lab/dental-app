@@ -56,18 +56,6 @@ export default function BookingPage() {
   pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
   pdf.save("appointment.pdf");
 };
-overlay.style.background = "rgba(10, 30, 60, 0.65)";
-overlay.style.backdropFilter = "blur(6px)";
-  const imgData = canvas.toDataURL("image/png");
-
-  const pdf = new jsPDF("p", "mm", "a4");
-
-  const imgWidth = 210;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-  pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-  pdf.save("appointment.pdf");
-};
 
   // ── Load slots whenever the date changes ──────────────────────────────────
   const loadSlots = useCallback(async (date) => {
@@ -298,7 +286,7 @@ overlay.style.backdropFilter = "blur(6px)";
       )}
     </div>
   );
-
+}
 
 const styles = {
   page: {
