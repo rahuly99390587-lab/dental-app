@@ -24,29 +24,22 @@ export default function BookingPage() {
   const [booking, setBooking]           = useState(null); // successful booking data
   const [fieldErrors, setFieldErrors]   = useState({});
 
-  const downloadPDF = async () => {
+ const downloadPDF = async () => {
   const element = document.getElementById("booking-card");
   if (!element) return alert("Booking card not found");
 
-  const clone = element.cloneNode(true);
-  clone.style.position = "absolute";
-  clone.style.top = "-9999px";
-  clone.style.left = "-9999px";
+  // 🔥 overlay hide
+  const modal = document.querySelector('[style*="rgba"]');
+  if (modal) modal.style.display = "none";
 
-  // ✅ FIX COLOR ISSUE
-  clone.style.background = "linear-gradient(135deg, #0f4c81, #1a6eb5)";
-  clone.style.padding = "20px";
-
-  document.body.appendChild(clone);
-
-  const canvas = await html2canvas(clone, {
-    scale: 3,
+  const canvas = await html2canvas(element, {
+    scale: 2,
     useCORS: true,
+    backgroundColor: "#ffffff",
   });
 
-
-
-  document.body.removeChild(clone);
+  // 🔥 overlay restore
+  if (modal) modal.style.display = "flex";
 
   const imgData = canvas.toDataURL("image/png");
 
