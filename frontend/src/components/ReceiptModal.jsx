@@ -166,7 +166,7 @@ const styles = {
     fontWeight: 600,
   },
   tokenBox: {
-  background: '#0f4c81',
+  background: '#01a6eb5',
     borderRadius: '14px',
     padding: '1.5rem',
     textAlign: 'center',
