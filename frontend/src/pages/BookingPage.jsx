@@ -28,18 +28,24 @@ export default function BookingPage() {
   const element = document.getElementById("booking-card");
   if (!element) return alert("Booking card not found");
 
-  // 🔥 overlay hide
-  const modal = document.querySelector('[style*="rgba"]');
-  if (modal) modal.style.display = "none";
+  // clone clean version
+  const clone = element.cloneNode(true);
+  clone.style.position = "fixed";
+  clone.style.top = "0";
+  clone.style.left = "0";
+  clone.style.width = "100%";
+  clone.style.background = "#ffffff";
+  clone.style.boxShadow = "none";
 
-  const canvas = await html2canvas(element, {
-    scale: 2,
+  document.body.appendChild(clone);
+
+  const canvas = await html2canvas(clone, {
+    scale: 4, // 🔥 HIGH QUALITY
     useCORS: true,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#ffffff"
   });
 
-  // 🔥 overlay restore
-  if (modal) modal.style.display = "flex";
+  document.body.removeChild(clone);
 
   const imgData = canvas.toDataURL("image/png");
 
