@@ -24,28 +24,27 @@ export default function BookingPage() {
   const [booking, setBooking]           = useState(null); // successful booking data
   const [fieldErrors, setFieldErrors]   = useState({});
 
- const downloadPDF = async () => {
+const downloadPDF = async () => {
   const element = document.getElementById("booking-card");
   if (!element) return alert("Booking card not found");
 
-  // clone clean version
-  const clone = element.cloneNode(true);
-  clone.style.position = "fixed";
-  clone.style.top = "0";
-  clone.style.left = "0";
-  clone.style.width = "100%";
-  clone.style.background = "#ffffff";
-  clone.style.boxShadow = "none";
+  // 🔥 TEMP FIX: remove overlay effect
+  const parent = element.parentElement;
+  const originalBg = parent.style.background;
+  const originalBlur = parent.style.backdropFilter;
 
-  document.body.appendChild(clone);
+  parent.style.background = "#ffffff";
+  parent.style.backdropFilter = "none";
 
-  const canvas = await html2canvas(clone, {
-    scale: 4, // 🔥 HIGH QUALITY
+  const canvas = await html2canvas(element, {
+    scale: 4,
     useCORS: true,
     backgroundColor: "#ffffff"
   });
 
-  document.body.removeChild(clone);
+  // restore
+  parent.style.background = originalBg;
+  parent.style.backdropFilter = originalBlur;
 
   const imgData = canvas.toDataURL("image/png");
 
