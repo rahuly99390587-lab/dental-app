@@ -28,15 +28,17 @@ export default function BookingPage() {
 
   if (!element) return alert("Booking card not found");
 
-  const overlay = document.querySelector('[style*="rgba(10, 30, 60"]');
-if (overlay) overlay.style.display = "none";
+  const overlay = element.parentElement;
+overlay.style.background = "transparent";
+overlay.style.backdropFilter = "none";
 
   const canvas = await html2canvas(element, {
   scale: 3,
   useCORS: true,
   backgroundColor: "#ffffff"
 });
-if (overlay) overlay.style.display = "flex";
+overlay.style.background = "rgba(10, 30, 60, 0.65)";
+overlay.style.backdropFilter = "blur(6px)";
   const imgData = canvas.toDataURL("image/png");
 
   const pdf = new jsPDF("p", "mm", "a4");
@@ -44,7 +46,7 @@ if (overlay) overlay.style.display = "flex";
   const imgWidth = 210;
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+  pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
   pdf.save("appointment.pdf");
 };
 
