@@ -165,8 +165,8 @@ const styles = {
     fontSize: '0.9rem',
     fontWeight: 600,
   },
-  tokenBox: {
-  background: '#01a6eb5',
+ tokenBox: {
+  background: 'linear-gradient(135deg, #0f4c81, #1a6eb5)',
     borderRadius: '14px',
     padding: '1.5rem',
     textAlign: 'center',
