@@ -59,6 +59,25 @@ export default function AdminPage() {
   };
 
   // ── Delete patient ────────────────────────────────────────────────────────
+const handleDelete = async (mobile) => {
+  if (!window.confirm(`Delete all bookings for ${mobile}?`)) return;
+
+  try {
+    await deletePatient(mobile);
+    setDeleteMsg(`✓ Deleted records for ${mobile}`);
+
+    if (activeTab === 'today') loadToday();
+    else handleSearch();
+
+    setTimeout(() => setDeleteMsg(''), 3000);
+  } catch (err) {
+    setError(err.message);
+  }
+};
+
+
+// ── Print receipt ────────────────────────────────────────────────────────
+
   const handlePrint = (booking) => {
   const printWindow = window.open('', '_blank');
 
@@ -78,7 +97,6 @@ export default function AdminPage() {
             max-width: 750px;
             margin: auto;
           }
-
           .header {
             display: flex;
             justify-content: space-between;
@@ -278,7 +296,12 @@ export default function AdminPage() {
               <h2 style={styles.sectionTitle}>Today's Appointments — {formatDateShort(getTodayISO())}</h2>
               <button style={styles.refreshBtn} onClick={loadToday}>↻ Refresh</button>
             </div>
-            <PatientTable patients={patients} loading={loading} onDelete={handleDelete} />
+            <PatientTable 
+            patients={patients} 
+            loading={loading} 
+            onDelete={handleDelete}
+            onPrint={handlePrint}
+        />
           </div>
         )}
 
@@ -301,7 +324,12 @@ export default function AdminPage() {
               />
               <button type="submit" style={styles.searchBtn}>Search</button>
             </form>
-            <PatientTable patients={patients} loading={loading} onDelete={handleDelete} />
+            <PatientTable 
+             patients={patients} 
+              loading={loading} 
+              onDelete={handleDelete}
+             onPrint={handlePrint}
+            />
           </div>
         )}
 
@@ -334,7 +362,12 @@ export default function AdminPage() {
                 {stats.recent?.length > 0 && (
                   <>
                     <h3 style={{ ...styles.sectionTitle, marginTop: '1.5rem' }}>Recent Bookings</h3>
-                    <PatientTable patients={stats.recent} loading={false} onDelete={handleDelete} />
+                    <PatientTable 
+                    patients={patients} 
+                    loading={loading} 
+                    onDelete={handleDelete}
+                    onPrint={handlePrint}
+                   />
                   </>
                 )}
               </div>
@@ -357,7 +390,7 @@ function Loader() {
   );
 }
 
-function PatientTable({ patients, loading, onDelete }) {
+function PatientTable({ patients, loading, onDelete, onPrint }){
   if (loading) return <Loader />;
 
   if (!patients || patients.length === 0) {
@@ -397,7 +430,7 @@ function PatientTable({ patients, loading, onDelete }) {
   {/* 🧾 PRINT BUTTON */}
   <button
     style={styles.printBtn}
-    onClick={() => handlePrint(p)}
+    onClick={() => onPrint(p)}
   >
     🧾 Print
   </button>
@@ -406,6 +439,7 @@ function PatientTable({ patients, loading, onDelete }) {
   <button
     style={styles.deleteBtn}
     onClick={() => onDelete(p.mobile)}
+    title="Delete all bookings for this mobile"
   >
     🗑 Delete
   </button>
