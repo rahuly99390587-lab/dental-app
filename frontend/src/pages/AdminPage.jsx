@@ -618,19 +618,20 @@ const styles = {
     fontWeight: 600,
     padding: '0.3rem 0.6rem',
     whiteSpace: 'nowrap',
+  },
   printBtn: {
   background: '#eff6ff',              // light blue bg
-  border: '1px solid #93c5fd',        // blue border
+  border: '1px solid #66abfaff',        // blue border
   borderRadius: '6px',
-  color: '#1d4ed8',                  // blue text
+  color: '#2563eb',                  // blue text
   cursor: 'pointer',
   fontSize: '0.78rem',
   fontWeight: 600,
   padding: '0.3rem 0.6rem',
   marginRight: '6px',
   whiteSpace: 'nowrap',
+  transition: 'all 0.2s ease',
 },
-  },
   statsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
