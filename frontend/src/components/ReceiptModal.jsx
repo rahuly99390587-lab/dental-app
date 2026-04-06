@@ -17,74 +17,8 @@ export default function ReceiptModal({ booking, onClose, onNewBooking }) {
   }, [onClose]);
 
   if (!booking) return null;
-  const downloadPDF = () => {
-  const printWindow = window.open('', '_blank');
-
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>Appointment Receipt</title>
-        <style>
-          body {
-            font-family: Arial;
-            padding: 30px;
-          }
-
-          .box {
-            border: 3px solid #0f4c81;
-            padding: 25px;
-            max-width: 700px;
-            margin: auto;
-          }
-
-          h2 {
-            text-align: center;
-            color: #0f4c81;
-          }
-
-          .token {
-            background: #0f4c81;
-            color: #fff;
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 30px;
-            font-weight: bold;
-            margin: 20px 0;
-          }
-
-          .row {
-            margin: 10px 0;
-            font-size: 16px;
-          }
-        </style>
-      </head>
-
-      <body>
-        <div class="box">
-          <h2>Appointment Confirmed</h2>
-
-          <div class="token">
-            Token: ${String(booking.token).padStart(3, '0')}
-          </div>
-
-          <div class="row"><b>Name:</b> ${booking.name}</div>
-          <div class="row"><b>Mobile:</b> ${booking.mobile}</div>
-          <div class="row"><b>Date:</b> ${booking.date}</div>
-          <div class="row"><b>Time:</b> ${booking.slot}</div>
-          <div class="row"><b>Problem:</b> ${booking.problem || "-"}</div>
-        </div>
-
-        <script>
-          window.onload = function() {
-            window.print();
-          }
-        </script>
-      </body>
-    </html>
-  `);
-
-  printWindow.document.close();
+const downloadPDF = () => {
+  window.print();
 };
 
   return (
