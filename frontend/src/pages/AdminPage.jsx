@@ -59,18 +59,161 @@ export default function AdminPage() {
   };
 
   // ── Delete patient ────────────────────────────────────────────────────────
-  const handleDelete = async (mobile) => {
-    if (!window.confirm(`Delete all bookings for ${mobile}?`)) return;
-    try {
-      await deletePatient(mobile);
-      setDeleteMsg(`✓ Deleted records for ${mobile}`);
-      if (activeTab === 'today') loadToday();
-      else handleSearch();
-      setTimeout(() => setDeleteMsg(''), 3000);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+  const handlePrint = (booking) => {
+  const printWindow = window.open('', '_blank');
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Patient Receipt</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+          }
+
+          .receipt {
+            border: 3px solid #0f4c81;
+            padding: 25px;
+            max-width: 750px;
+            margin: auto;
+          }
+
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          }
+
+          .clinic-info {
+            text-align: left;
+          }
+
+          .clinic-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0f4c81;
+          }
+
+          .logo {
+            width: 70px;
+          }
+
+          .token-box {
+            text-align: center;
+            background: #0f4c81;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+          }
+
+          .token-number {
+            font-size: 42px;
+            font-weight: bold;
+          }
+
+          .details {
+            margin-top: 15px;
+          }
+
+          .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 16px;
+          }
+
+          .label {
+            font-weight: bold;
+          }
+
+          .qr {
+            text-align: center;
+            margin-top: 20px;
+          }
+
+          .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+          }
+
+          .signature {
+            margin-top: 40px;
+            text-align: right;
+          }
+
+          @media print {
+            body {
+              margin: 0;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="receipt">
+
+          <div class="header">
+            <div class="clinic-info">
+              <div class="clinic-name">${booking.clinicName || "Your Clinic Name"}</div>
+              <div>${booking.address || "Clinic Address"}</div>
+            </div>
+
+            <!-- LOGO -->
+            <img class="logo" src="https://via.placeholder.com/70" />
+          </div>
+
+          <!-- TOKEN -->
+          <div class="token-box">
+            <div>Your Token Number</div>
+            <div class="token-number">${String(booking.token).padStart(3, '0')}</div>
+          </div>
+
+          <!-- DETAILS -->
+          <div class="details">
+            <div class="row"><span class="label">Patient Name:</span> <span>${booking.name}</span></div>
+            <div class="row"><span class="label">Mobile:</span> <span>${booking.mobile}</span></div>
+            <div class="row"><span class="label">Date:</span> <span>${booking.date}</span></div>
+            <div class="row"><span class="label">Time:</span> <span>${booking.slot}</span></div>
+            <div class="row"><span class="label">Problem:</span> <span>${booking.problem || "-"}</span></div>
+            <div class="row"><span class="label">Doctor:</span> <span>Dr. Sharma</span></div>
+            <div class="row"><span class="label">Fees:</span> <span>₹500</span></div>
+          </div>
+
+          <!-- QR CODE -->
+          <div class="qr">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=Token-${booking.token}" />
+          </div>
+
+          <!-- FOOTER -->
+          <div class="footer">
+            <div>Please arrive 10 minutes early</div>
+            <div>Thank you!</div>
+          </div>
+
+          <!-- SIGNATURE -->
+          <div class="signature">
+            ___________________<br/>
+            Authorized Signature
+          </div>
+
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        </script>
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+};
 
   // ── Tab change ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -250,14 +393,24 @@ function PatientTable({ patients, loading, onDelete }) {
                 <span style={styles.problemText}>{p.problem || '—'}</span>
               </td>
               <td style={styles.td}>
-                <button
-                  style={styles.deleteBtn}
-                  onClick={() => onDelete(p.mobile)}
-                  title="Delete all bookings for this mobile"
-                >
-                  🗑 Delete
-                </button>
-              </td>
+
+  {/* 🧾 PRINT BUTTON */}
+  <button
+    style={styles.printBtn}
+    onClick={() => handlePrint(p)}
+  >
+    🧾 Print
+  </button>
+
+  {/* ❌ DELETE */}
+  <button
+    style={styles.deleteBtn}
+    onClick={() => onDelete(p.mobile)}
+  >
+    🗑 Delete
+  </button>
+
+</td>
             </tr>
           ))}
         </tbody>
