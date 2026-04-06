@@ -28,23 +28,40 @@ const downloadPDF = async () => {
   const element = document.getElementById("booking-card");
   if (!element) return alert("Booking card not found");
 
-  // 🔥 TEMP FIX: remove overlay effect
-  const parent = element.parentElement;
-  const originalBg = parent.style.background;
-  const originalBlur = parent.style.backdropFilter;
+  // ✅ CLONE
+  const clone = element.cloneNode(true);
+  clone.style.position = "absolute";
+  clone.style.top = "-9999px";
+  clone.style.left = "-9999px";
 
-  parent.style.background = "#ffffff";
-  parent.style.backdropFilter = "none";
+  document.body.appendChild(clone);
 
-  const canvas = await html2canvas(element, {
-    scale: 4,
-    useCORS: true,
-    backgroundColor: "#ffffff"
+  // ✅ FIX COLORS FOR PDF ONLY
+  clone.querySelectorAll("*").forEach((el) => {
+    const style = window.getComputedStyle(el);
+
+    // 🔥 FIX GRADIENT → SOLID COLOR
+    if (style.backgroundImage.includes("gradient")) {
+      el.style.background = "#1a6eb5"; // same blue tone
+    }
+
+    // 🔥 REMOVE BLUR / GLASS EFFECT
+    el.style.backdropFilter = "none";
+
+    // 🔥 FIX TEXT COLOR
+    if (style.color === "rgba(0, 0, 0, 0.5)") {
+      el.style.color = "#000";
+    }
   });
 
-  // restore
-  parent.style.background = originalBg;
-  parent.style.backdropFilter = originalBlur;
+  // ✅ CAPTURE
+  const canvas = await html2canvas(clone, {
+    scale: 3,
+    useCORS: true,
+    backgroundColor: "#ffffff",
+  });
+
+  document.body.removeChild(clone);
 
   const imgData = canvas.toDataURL("image/png");
 

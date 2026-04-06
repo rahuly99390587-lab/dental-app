@@ -47,7 +47,7 @@ export default function ReceiptModal({ booking, onClose, onNewBooking }) {
         style={{
   ...styles.modal,
   background: "#ffffff",
-  boxShadow: "none"
+  boxShadow: "none",
 }}
         ref={dialogRef}
         tabIndex={-1}
