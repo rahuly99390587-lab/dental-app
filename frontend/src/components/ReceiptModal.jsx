@@ -17,27 +17,74 @@ export default function ReceiptModal({ booking, onClose, onNewBooking }) {
   }, [onClose]);
 
   if (!booking) return null;
-  const downloadPDF = async () => {
-  const element = document.getElementById("booking-card");
+  const downloadPDF = () => {
+  const printWindow = window.open('', '_blank');
 
-  if (!element) {
-    alert("PDF error");
-    return;
-  }
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Appointment Receipt</title>
+        <style>
+          body {
+            font-family: Arial;
+            padding: 30px;
+          }
 
-  const html2canvas = (await import("html2canvas")).default;
-  const jsPDF = (await import("jspdf")).default;
+          .box {
+            border: 3px solid #0f4c81;
+            padding: 25px;
+            max-width: 700px;
+            margin: auto;
+          }
 
-  const canvas = await html2canvas(element, { scale: 2 });
-  const imgData = canvas.toDataURL("image/png");
+          h2 {
+            text-align: center;
+            color: #0f4c81;
+          }
 
-  const pdf = new jsPDF("p", "mm", "a4");
+          .token {
+            background: #0f4c81;
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 30px;
+            font-weight: bold;
+            margin: 20px 0;
+          }
 
-  const imgWidth = 210;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          .row {
+            margin: 10px 0;
+            font-size: 16px;
+          }
+        </style>
+      </head>
 
-  pdf.addImage(imgData, "PNG", 0, 10, imgWidth, imgHeight);
-  pdf.save("booking-receipt.pdf");
+      <body>
+        <div class="box">
+          <h2>Appointment Confirmed</h2>
+
+          <div class="token">
+            Token: ${String(booking.token).padStart(3, '0')}
+          </div>
+
+          <div class="row"><b>Name:</b> ${booking.name}</div>
+          <div class="row"><b>Mobile:</b> ${booking.mobile}</div>
+          <div class="row"><b>Date:</b> ${booking.date}</div>
+          <div class="row"><b>Time:</b> ${booking.slot}</div>
+          <div class="row"><b>Problem:</b> ${booking.problem || "-"}</div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        </script>
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
 };
 
   return (
@@ -104,7 +151,7 @@ export default function ReceiptModal({ booking, onClose, onNewBooking }) {
           </button>
           <button
   style={styles.btnSecondary}
-  onClick={downloadPDF}
+  onClick={() => downloadPDF(booking)}
 >
   📃 Download PDF
 </button>
